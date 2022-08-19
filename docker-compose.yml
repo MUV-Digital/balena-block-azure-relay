@@ -8,11 +8,3 @@ services:
     network_mode: host
     labels:
       io.balena.features.supervisor-api: '1'
-    depends_on:
-      - 'mqtt'
-  mqtt:
-    image: eclipse-mosquitto:1.6.15
-    restart: unless-stopped
-    # need host exposure for data service, but limit to just this host for security
-    ports:
-      - 127.0.0.1:1883:1883

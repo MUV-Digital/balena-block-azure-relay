@@ -49,34 +49,11 @@ async function provision(uuid) {
     console.log(`Provisioned OK: ${response.status} ${text}`);
   } else {
     console.warn(`Provisioning failure: ${response.status} ${text}`);
-
     // If device already provisioned, Supervisor may not have updated environment
     // vars yet and thus tried to provision again. So force Supervisor to update
     // and refresh environment variables. If successful, this service will
     // not attempt to provision on the next invocation.
-    let alreadyExists = false;
-    switch (process.env.CLOUD_PROVIDER) {
-      case 'AWS':
-        alreadyExists = text == 'thing already exists';
-        break;
-      case 'AZURE':
-        alreadyExists = text.startsWith('DeviceAlreadyExistsError');
-        break;
-      case 'GCP':
-        let respJson = {};
-        try {
-          respJson = JSON.parse(text);
-        } catch (e) {
-          // just use empty respJson
-        }
-        const alreadyExistsCode = 6;
-
-        alreadyExists = respJson.code && respJson.code == alreadyExistsCode;
-        break;
-      default:
-        // not possible at this point
-        break;
-    }
+    const alreadyExists = text.startsWith('DeviceAlreadyExistsError');
     if (alreadyExists) {
       console.warn(
         `Device already exists on ${process.env.CLOUD_PROVIDER}; updating environment vars`

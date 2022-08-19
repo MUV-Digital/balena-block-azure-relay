@@ -1,7 +1,6 @@
 name: azure-relay
 description: >-
-  Push data to a cloud provider's IoT facility via MQTT messages. Works with
-  AWS, Azure, and Google Cloud.
+  Push data to a Azure's IoT facility via MQTT messages.
 version: 0.0.1
 type: sw.block
 assets:
