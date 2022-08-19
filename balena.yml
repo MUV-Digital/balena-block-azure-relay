@@ -1,0 +1,22 @@
+name: azure-relay
+description: >-
+  Push data to a cloud provider's IoT facility via MQTT messages. Works with
+  AWS, Azure, and Google Cloud.
+version: 0.0.1
+type: sw.block
+assets:
+  repository:
+    type: blob.asset
+    data:
+      url: 'https://github.com/MUV-IoT-Service/balena-block-azure-relay.git'
+  logo:
+    type: blob.asset
+    data:
+      url: 'https://github.com/MUV-IoT-Service/node-red-install/blob/main/azure-relay.png?raw=true'
+data:
+  defaultDeviceType: nanopi-r2s
+  supportedDeviceTypes:
+    - raspberrypi4-64
+    - raspberrypi3
+    - raspberrypi3-64
+    - nanopi-r2s

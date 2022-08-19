@@ -1,0 +1,27 @@
+{
+  "name": "cloud-relay",
+  "version": "0.2.8",
+  "description": "BalenaBlock to push data from IoT device to cloud provider",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "async-mqtt": "^2.6.1",
+    "aws-iot-device-sdk": "^2.2.11",
+    "azure-event-hubs": "^0.2.11",
+    "azure-iot-device": "^1.17.8",
+    "azure-iot-device-mqtt": "^1.15.8",
+    "azure-iothub": "^1.15.0",
+    "jsonwebtoken": "^8.5.1",
+    "node-fetch": "^3.1.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MUV-IoT-Service/balena-block-azure-relay.git"
+  },
+  "author": "Timo Visscher <timo@muv.digital>",
+  "license": "Apache-2.0"
+}
