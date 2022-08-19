@@ -1,5 +1,4 @@
 import Messenger from './lib/messenger.js';
-import awsIot from 'aws-iot-device-sdk';
 import fetch from 'node-fetch';
 import mqtt from 'async-mqtt';
 
@@ -131,22 +130,8 @@ async function connectLocal() {
  * pre-define a CLOUD_PROVIDER variable.
  */
 async function start() {
-  //console.log("env: " + JSON.stringify(process.env))
-  if (!process.env.CLOUD_PROVIDER) {
-    if (process.env.AWS_DATA_ENDPOINT) {
-      process.env.CLOUD_PROVIDER = 'AWS';
-    } else if (process.env.AZURE_HUB_HOST) {
-      process.env.CLOUD_PROVIDER = 'AZURE';
-    } else if (process.env.GCP_PROJECT_ID) {
-      process.env.CLOUD_PROVIDER = 'GCP';
-    } else {
-      console.error("Can't determine cloud provider");
-      return;
-    }
-  }
-
   if (!cloudMsgr) {
-    let cloudMsgr = Messenger.create(process.env.CLOUD_PROVIDER);
+    cloudMsgr = Messenger.createAzureMessenger();
     console.log(`Created cloud messenger: ${cloudMsgr}`);
   }
 
