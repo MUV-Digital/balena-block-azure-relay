@@ -70,7 +70,7 @@ async function provision(uuid) {
  * If success, 'localMqtt' is not null.
  */
 async function connectLocal() {
-  const PRODUCER_TOPICS = ['telemetry', 'state', 'device'];
+  const producerTopics = ['telemetry', 'state', 'device'];
   let count = 0;
   const maxTries = 3;
   const delay = 5;
@@ -81,10 +81,10 @@ async function connectLocal() {
         localMqtt = await mqtt.connectAsync('mqtt://127.0.0.1');
         console.log('Connected to mqtt://127.0.0.1');
       }
-      PRODUCER_TOPICS.forEach(topic => {
+      for (const topic of producerTopics) {
         await localMqtt.subscribe(topic, { qos: 1 });
         console.log('Subscribed to topic:', topic);
-      });
+      }
       break;
     } catch (e) {
       console.warn('Cannot connect to local MQTT:', e);
