@@ -66,13 +66,20 @@ export default class Messenger {
   publish(topic, message) {
     throw new Error('Abstract method');
   }
+
+  /**
+   * Receives the cloud to device messages and should publish it to the local MQTT broker's topic 'c2d'
+   */
+  receiveC2D(localMqtt) {
+    throw new Error('Abstract method');
+  }
 }
 
 /** Messenger for MS Azure IoT. */
 class AzureMessenger extends Messenger {
   connectSync() {
     console.log(`Connecting to host ${process.env.AZURE_HUB_HOST}`);
-    //console.debug("connstr:", `HostName=${process.env.AZURE_HUB_HOST};DeviceId=${process.env.RESIN_DEVICE_UUID};x509=true`)
+    //console.debug("connstr:", connectionString)
     this.mqtt = clientFromConnectionString(
       `HostName=${process.env.AZURE_HUB_HOST};DeviceId=${process.env.RESIN_DEVICE_UUID};x509=true`
     );
@@ -121,6 +128,16 @@ class AzureMessenger extends Messenger {
 
   toString() {
     return 'Azure cloud messenger';
+  }
+
+  receiveC2D(localMqtt) {
+    if (!this.mqtt) {
+      this.connectSync();
+    }
+    this.mqtt.on('message', function (msg) {
+      //console.log('Id: ' + msg.messageId + ' Body: ' + msg.data);
+      localMqtt.publish('c2d', msg.data);
+    });
   }
 }
 

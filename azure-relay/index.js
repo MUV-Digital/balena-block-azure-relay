@@ -71,6 +71,7 @@ async function provision(uuid) {
  */
 async function connectLocal() {
   const producerTopics = ['telemetry', 'state', 'device'];
+
   let count = 0;
   const maxTries = 3;
   const delay = 5;
@@ -120,6 +121,7 @@ async function start() {
       if (localMqtt) {
         if (cloudMsgr.isSyncConnect()) {
           cloudMsgr.connectSync();
+          cloudMsgr.receiveC2D(localMqtt);
         } else {
           await cloudMsgr.connect();
         }
