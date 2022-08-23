@@ -121,7 +121,8 @@ async function start() {
       if (localMqtt) {
         if (cloudMsgr.isSyncConnect()) {
           cloudMsgr.connectSync();
-          cloudMsgr.receiveC2D(localMqtt);
+          cloudMsgr.subscribeC2D(localMqtt);
+          cloudMsgr.subscribeTwinConfig(localMqtt);
         } else {
           await cloudMsgr.connect();
         }

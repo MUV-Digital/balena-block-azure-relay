@@ -68,9 +68,16 @@ export default class Messenger {
   }
 
   /**
-   * Receives the cloud to device messages and should publish it to the local MQTT broker's topic 'c2d'
+   * Subscribes to the cloud to device messages and publishs it to the local MQTT broker's topic 'c2d'
    */
-  receiveC2D(localMqtt) {
+  subscribeC2D(localMqtt) {
+    throw new Error('Abstract method');
+  }
+
+  /**
+   * Subscribes to the device twin configuration and publishs it to the local MQTT broker's topic 'device-twin'
+   */
+  subscribeTwinConfig(localMqtt) {
     throw new Error('Abstract method');
   }
 }
@@ -130,19 +137,27 @@ class AzureMessenger extends Messenger {
     return 'Azure cloud messenger';
   }
 
-  receiveC2D(localMqtt) {
-    if (!this.mqtt) {
-      this.connectSync();
-    }
+  subscribeC2D(localMqtt) {
     this.mqtt.on('message', function (msg) {
-      //console.log('Id: ' + msg.messageId + ' Body: ' + msg.data);
       localMqtt.publish('c2d', msg.data);
+    });
+  }
+
+  subscribeTwinConfig(localMqtt) {
+    this.mqtt.getTwin(function (error, twin) {
+      if (error) {
+        console.warn('Could not get device twin configuration');
+      } else {
+        twin.on('properties.desired', function (delta) {
+          localMqtt.publish('device-twin', JSON.stringify(delta));
+        });
+      }
     });
   }
 }
 
 /**
- * Static method to reate appropriate subclass
+ * Static method to create appropriate subclass
  */
 Messenger.createAzureMessenger = function () {
   return new AzureMessenger();
