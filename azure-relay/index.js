@@ -9,6 +9,8 @@ import mqtt from 'async-mqtt';
 let localMqtt = null;
 // messenger with cloud provider (not async)
 let cloudMsgr = null;
+// the available system producer topics
+const producerTopics = ['telemetry', 'state', 'device'];
 
 /**
  * Forces the supervisor to update environment variables.
@@ -70,8 +72,6 @@ async function provision(uuid) {
  * If success, 'localMqtt' is not null.
  */
 async function connectLocal() {
-  const producerTopics = ['telemetry', 'state', 'device'];
-
   let count = 0;
   const maxTries = 3;
   const delay = 5;
@@ -127,7 +127,9 @@ async function start() {
           await cloudMsgr.connect();
         }
         localMqtt.on('message', (topic, message) => {
-          cloudMsgr.publish(topic, message);
+          if (producerTopics.includes(topic)) {
+            cloudMsgr.publish(topic, message);
+          }
         });
       }
     } else {

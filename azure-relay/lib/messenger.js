@@ -148,8 +148,11 @@ class AzureMessenger extends Messenger {
       if (error) {
         console.warn('Could not get device twin configuration');
       } else {
-        twin.on('properties.desired', delta => {
-          localMqtt.publish('device-twin', JSON.stringify(delta));
+        twin.on('properties.desired', desiredProperties => {
+          localMqtt.publish('device-twin', JSON.stringify(desiredProperties), {
+            qos: 1,
+            retain: true,
+          });
         });
       }
     });
