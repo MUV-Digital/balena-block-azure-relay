@@ -151,6 +151,10 @@ class AzureMessenger extends Messenger {
         twin.on('properties.desired', function (delta) {
           localMqtt.publish('device-twin', JSON.stringify(delta));
         });
+        localMqtt.publish(
+          'device-twin',
+          JSON.stringify(twin.properties.desired)
+        );
       }
     });
   }
