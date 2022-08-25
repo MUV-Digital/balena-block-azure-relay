@@ -98,7 +98,7 @@ class AzureMessenger extends Messenger {
     };
     this.mqtt.setOptions(options);
 
-    this.mqtt.open(function (err) {
+    this.mqtt.open(err => {
       if (err) {
         console.warn('Cannot connect to Azure IoT:', err.toString());
       } else {
@@ -126,7 +126,7 @@ class AzureMessenger extends Messenger {
     msg.contentType = 'application/json';
     msg.properties.add('topic', topic);
 
-    this.mqtt.sendEvent(msg, function (err) {
+    this.mqtt.sendEvent(msg, err => {
       if (err) {
         console.warn('Error sending message:', err.toString());
       }
@@ -138,23 +138,19 @@ class AzureMessenger extends Messenger {
   }
 
   subscribeC2D(localMqtt) {
-    this.mqtt.on('message', function (msg) {
+    this.mqtt.on('message', msg => {
       localMqtt.publish('c2d', msg.data);
     });
   }
 
   subscribeTwinConfig(localMqtt) {
-    this.mqtt.getTwin(function (error, twin) {
+    this.mqtt.getTwin((error, twin) => {
       if (error) {
         console.warn('Could not get device twin configuration');
       } else {
-        twin.on('properties.desired', function (delta) {
+        twin.on('properties.desired', delta => {
           localMqtt.publish('device-twin', JSON.stringify(delta));
         });
-        localMqtt.publish(
-          'device-twin',
-          JSON.stringify(twin.properties.desired)
-        );
       }
     });
   }
@@ -163,6 +159,6 @@ class AzureMessenger extends Messenger {
 /**
  * Static method to create appropriate subclass
  */
-Messenger.createAzureMessenger = function () {
+Messenger.createAzureMessenger = () => {
   return new AzureMessenger();
 };

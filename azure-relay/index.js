@@ -126,7 +126,7 @@ async function start() {
         } else {
           await cloudMsgr.connect();
         }
-        localMqtt.on('message', function (topic, message) {
+        localMqtt.on('message', (topic, message) => {
           cloudMsgr.publish(topic, message);
         });
       }
