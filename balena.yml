@@ -1,7 +1,7 @@
 name: azure-relay
 description: >-
   Push data to a Azure's IoT facility via MQTT messages.
-version: 0.0.3
+version: 0.0.5
 type: sw.block
 assets:
   repository:

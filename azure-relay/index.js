@@ -1,9 +1,12 @@
 import Messenger from './lib/messenger.js';
+import { Mqtt } from 'azure-iot-provisioning-device-mqtt';
+import { X509Security } from 'azure-iot-security-x509';
 import fetch from 'node-fetch';
+import getDeviceCertOpitons from './lib/util.js';
 import mqtt from 'async-mqtt';
+import pkg from 'azure-iot-provisioning-device';
 
-// just for debugging with util.inspect, etc.
-//import util from 'util'
+const { ProvisioningDeviceClient } = pkg;
 
 // async wrapper for MQTT client
 let localMqtt = null;
@@ -30,40 +33,36 @@ async function updateEnvironmentVars() {
  *
  * @return {boolean} true if provisioning successful; otherwise false.
  */
-async function provision(uuid) {
-  let url = process.env.PROVISION_URL;
-  if (!url) {
-    throw 'PROVISION_URL environment variable not defined';
-  }
-  console.log('Provisioning with cloud provider');
+async function provision() {
+  // Get the Balena fleet environment variables
+  const provisioningHost = process.env.PROVISIONING_HOST;
+  const idScope = process.env.PROVISIONING_IDSCOPE;
+  const registrationId = process.env.PROVISIONING_REGISTRATION_ID;
+  const deviceCert = getDeviceCertOpitons();
+  const transport = new Mqtt();
+  const securityClient = new X509Security(registrationId, deviceCert);
+  const deviceClient = ProvisioningDeviceClient.create(
+    provisioningHost,
+    idScope,
+    transport,
+    securityClient
+  );
 
-  const response = await fetch(url, {
-    method: 'POST',
-    body: `{ "uuid": "${uuid}", "balena_service": "${process.env.RESIN_SERVICE_NAME}" }`,
-    headers: {
-      'Cache-Control': 'no-cache',
-      'Content-Type': 'application/json',
-    },
-  });
-  const text = await response.text();
-  if (response.ok) {
-    // response.status >= 200 && response.status < 300
-    console.log(`Provisioned OK: ${response.status} ${text}`);
-  } else {
-    console.warn(`Provisioning failure: ${response.status} ${text}`);
-    // If device already provisioned, Supervisor may not have updated environment
-    // vars yet and thus tried to provision again. So force Supervisor to update
-    // and refresh environment variables. If successful, this service will
-    // not attempt to provision on the next invocation.
-    const alreadyExists = text.startsWith('DeviceAlreadyExistsError');
-    if (alreadyExists) {
-      console.warn(
-        `Device already exists on ${process.env.CLOUD_PROVIDER}; updating environment vars`
-      );
-      updateEnvironmentVars();
-    }
+  try {
+    const result = await deviceClient.register();
+    console.log('registration succeeded');
+    console.log('assigned hub = ' + result.assignedHub);
+    console.log('device id = ' + result.deviceId);
+    process.env.CONNECTION_STRING =
+      'HostName=' +
+      result.assignedHub +
+      ';DeviceId=' +
+      result.deviceId +
+      ';x509=true';
+  } catch (err) {
+    console.error('error registering device: ' + err);
+    updateEnvironmentVars();
   }
-  return response.ok;
 }
 
 /**
@@ -115,25 +114,22 @@ async function start() {
 
   try {
     if (cloudMsgr.isUnregistered()) {
-      await provision(process.env.RESIN_DEVICE_UUID);
-    } else if (cloudMsgr.isRegistrationComplete()) {
-      await connectLocal();
-      if (localMqtt) {
-        if (cloudMsgr.isSyncConnect()) {
-          cloudMsgr.connectSync();
-          cloudMsgr.subscribeC2D(localMqtt);
-          cloudMsgr.subscribeTwinConfig(localMqtt);
-        } else {
-          await cloudMsgr.connect();
-        }
-        localMqtt.on('message', (topic, message) => {
-          if (producerTopics.includes(topic)) {
-            cloudMsgr.publish(topic, message);
-          }
-        });
+      await provision();
+    }
+    await connectLocal();
+    if (localMqtt) {
+      if (cloudMsgr.isSyncConnect()) {
+        cloudMsgr.connectSync();
+        cloudMsgr.subscribeC2D(localMqtt);
+        cloudMsgr.subscribeTwinConfig(localMqtt);
+      } else {
+        await cloudMsgr.connect();
       }
-    } else {
-      console.log('Partially registered; try again later');
+      localMqtt.on('message', (topic, message) => {
+        if (producerTopics.includes(topic)) {
+          cloudMsgr.publish(topic, message);
+        }
+      });
     }
   } catch (e) {
     console.error(e);
