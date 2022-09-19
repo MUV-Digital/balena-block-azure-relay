@@ -6,7 +6,6 @@ export default function getDeviceCertOpitons() {
   return {
     cert: getCertFromEnv(),
     key: getPrivateKeyFromEnv(),
-    passphrase: '123123',
   };
 }
 

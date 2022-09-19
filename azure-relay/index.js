@@ -37,7 +37,7 @@ async function provision() {
   // Get the Balena fleet environment variables
   const provisioningHost = process.env.PROVISIONING_HOST;
   const idScope = process.env.PROVISIONING_IDSCOPE;
-  const registrationId = process.env.PROVISIONING_REGISTRATION_ID;
+  const registrationId = process.env.RESIN_DEVICE_UUID;
   const deviceCert = getDeviceCertOpitons();
   const transport = new Mqtt();
   const securityClient = new X509Security(registrationId, deviceCert);
